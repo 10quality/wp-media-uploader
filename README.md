@@ -8,7 +8,35 @@ The Media Uploader will pop-up WordPress Media Library, and will allow to upload
 
 Npm command:
 ```
-npm install wp-media-uploader
+npm install ...
+```
+
+## Usage
+
+First enqueue script:
+
+```php
+// (1) Make sure WP media gallery is enqueued
+wp_enqueue_media();
+
+// (2) Enqueue "Wordpress Media Uploader"
+wp_enqueue_script(
+    'wp-media-uploader',
+    PATH_TO_FILE . '/jquery.wp-media-uploader.min.js',
+    [ 'jquery', 'jquery-ui-core' ],
+    '1.0.0',
+    true
+);
+```
+
+Then an HTML element with these essential attributes:
+```html
+<a class="insert-media"
+    data-editor="my-editor"
+    role="media-uploader"
+>
+    Insert into post
+</a>
 ```
 
 ## License
