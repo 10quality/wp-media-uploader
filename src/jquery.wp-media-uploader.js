@@ -412,6 +412,7 @@
                     id: models[i].id,
                     type: models[i].get( 'type' ),
                     subtype: models[i].get( 'subtype' ),
+                    mime: models[i].get( 'mime' ),
                     url: models[i].get( 'url' ),
                 };
                 if ( models[i].get( 'alt' ) )
@@ -423,6 +424,16 @@
                     media.url = models[i].get( 'sizes' )[self.options.size].url;
                 if ( models[i].get( 'image' ) )
                     media.img = models[i].get( 'image' ).src;
+                if ( models[i].get( 'title' ) )
+                    media.title = models[i].get( 'title' );
+                if ( models[i].get( 'filename' ) )
+                    media.filename = models[i].get( 'filename' );
+                if ( media.type !== 'image'
+                    && media.type !== 'video'
+                    && media.type !== 'embed'
+                ) {
+                    media.type = 'file';
+                }
                 attachments.push( media );
             }
             // Shortcode to html
