@@ -42,7 +42,7 @@ wp_enqueue_script(
 ```
 
 If you want the plugin to load select attachments and render them for you, add `wp-api` as dependency:
-``php
+```php
 // (1) Make sure WP media gallery is enqueued
 wp_enqueue_media();
 
