@@ -103,7 +103,6 @@ The following is the list of available jQuery plugin `options`:
 | `render` | `bool` | Flag that indicates if selected results should be rendered inside target or not. Default: `true` |
 | `multiple` | `bool` | Flag that indicates if multiple selection is allowed. Default: `false` |
 | `clearOnSelection` | `bool` | Flag that indicates if results in target should be cleared once a new selection is made, if set to `false`, results will be appended. The plugin will force this option to `true` when the `multiple` option is set to `false`. Default: `true` |
-| `clearOnSelection` | `bool` | Flag that indicates if results in target should be cleared once a new selection is made, if set to `false`, results will be appended. The plugin will force this option to `true` when the `multiple` option is set to `false`. Default: `true` |
 | `title` | `string` | Title to display on top of the media uploader modal. |
 | `buttonText` | `string` | Selection button text to display inside the media uploader modal. |
 | `mimeType` | `string` | Expected values `image`, `video` or empty. |
