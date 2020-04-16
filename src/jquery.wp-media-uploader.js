@@ -541,6 +541,12 @@
                 // Fix type
                 if ( media.type !== 'image' )
                     media.type = data[i].mime_type.replace( /\/[a-zA-Z0-9]+/g, '' );
+                if ( media.type !== 'image'
+                    && media.type !== 'video'
+                    && media.type !== 'embed'
+                ) {
+                    media.type = 'file';
+                }
                 attachments.push( media );
             }
             self.render( attachments );
