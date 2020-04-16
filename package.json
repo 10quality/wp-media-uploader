@@ -1,0 +1,30 @@
+{
+  "name": "wp-media-uploader",
+  "version": "1.0.0",
+  "description": "Convert any DOM element into a WordPress media uploader input.",
+  "main": "dist/jquery.wp-media-uploader.min.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/10quality/wp-media-uploader.git"
+  },
+  "keywords": [
+    "wordpress",
+    "media",
+    "uploader",
+    "images",
+    "video",
+    "files"
+  ],
+  "author": "10 Quality Studio <https://www.10quality.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/10quality/wp-media-uploader/issues"
+  },
+  "homepage": "https://github.com/10quality/wp-media-uploader#readme",
+  "private": false,
+  "devDependencies": {
+    "gulp": "4.0.2",
+    "gulp-jsmin": "^0.1.5",
+    "gulp-rename": "^2.0.0"
+  }
+}
