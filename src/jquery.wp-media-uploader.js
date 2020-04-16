@@ -40,6 +40,13 @@
         var self = this;
         self.$el = $( this );
         /**
+         * WordPress media frame.
+         * @since 1.0.0
+         * @see wp.media
+         * @var {object}
+         */
+        var frame = undefined;
+        /**
          * DOM element where to render results.
          * @since 1.0.0
          */
@@ -69,7 +76,7 @@
              * Input value
              * @var {string}
              */
-            name: self.$el.attr( 'value' ) || undefined,
+            value: self.$el.attr( 'value' ) || undefined,
             /**
              * ID of The Media Gallery uploader.
              * @var {string}
@@ -84,22 +91,22 @@
              * Flag that indicates if plugin should render results. 
              * @var {bool}
              */
-            render: self.$el.data( 'render' ) || true,
+            render: self.$el.data( 'render' ) ? self.$el.data( 'render' ) : true,
             /**
              * Flag that indicates if multiple results are expected. 
              * @var {bool}
              */
-            multiple: self.$el.attr( 'multiple' ) || false,
+            multiple: self.$el.attr( 'multiple' ) ? self.$el.attr( 'multiple' ) : false,
             /**
              * Flag that indicates results should be cleared when a new selection is being rendered.
              * @var {bool}
              */
-            clearOnSelection: self.$el.data( 'clear-on-selection' ) || true,
+            clearOnSelection: self.$el.data( 'clear-on-selection' ) ? self.$el.data( 'clear-on-selection' ) : true,
             /**
              * Flag that indicates results can be cleared.
              * @var {bool}
              */
-            allowClear: self.$el.data( 'allow-clear' ) || true,
+            allowClear: self.$el.data( 'allow-clear' ) ? self.$el.data( 'allow-clear' ) : true,
             /**
              * Template DOM element or HTML string.
              * @var {string}
@@ -121,6 +128,31 @@
              */
             templateEmbed: self.$el.data( 'template-embed' ) || undefined,
             /**
+             * Title that will appear on top of the media uploader.
+             * @var {string}
+             */
+            title: self.$el.data( 'title' ) || undefined,
+            /**
+             * Button text.
+             * @var {string}
+             */
+            buttonText: self.$el.data( 'button' ) || undefined,
+            /**
+             * Mime type (image or video).
+             * @var {string}
+             */
+            mimeType: self.$el.data( 'type' ) || undefined,
+            /**
+             * The attachment size to select if available
+             * @var {string}
+             */
+            size: self.$el.data( 'size' ) || undefined,
+            /**
+             * Wether or not to allow modal to close after selection.
+             * @var {string}
+             */
+            allowClose: self.$el.data( 'allowClose' ) ? self.$el.data( 'allowClose' ) : true,
+            /**
              * Callback function with media results as parameter, called after render process has finished.
              * @var {function}
              */
@@ -139,12 +171,12 @@
              * Whether or not to receive an ID value instead of a url.
              * @var {string}
              */
-            idValue: self.$el.data( 'id-value' ) || true,
+            idValue: self.$el.data( 'id-value' ) ? self.$el.data( 'id-value' ) : true,
             /**
              * Whether or not to display input.
              * @var {string}
              */
-            showInput: self.$el.data( 'show-input' ) || false,
+            showInput: self.$el.data( 'show-input' ) ? self.$el.data( 'show-input' ) : false,
             /**
              * Whether or not to display input.
              * @var {string}
@@ -187,6 +219,16 @@
             // Init ID if needed
             if ( self.$el.attr( 'id' ) === undefined )
                 self.$el.attr( 'id', 'uploader-' + self.uniqid() );
+            // Assign frame
+            self.frame = wp.media.frames[self.$el.attr( 'id' )] = wp.media( {
+                title: self.options.title,
+                library: self.options.mimeType ? {type: self.options.mimeType} : undefined,
+                button: {
+                    text: self.options.buttonText,
+                    close: self.options.allowClose,
+                },
+                multiple: self.options.multiple,
+            } );
             // Assign targer
             switch ( self.options.target ) {
                 case 'before':
@@ -237,8 +279,9 @@
             // General options override
             if ( self.options.multiple )
                 self.options.clearOnSelection = true;
-            // Bind listener
-            window.send_to_editor = self.on_send_to_editor;
+            // Bind events
+            self.$el.on( 'click', self.on_click );
+            self.frame.on( 'select', self.on_select );
         };
         /**
          * Destroys plugin.
@@ -247,8 +290,21 @@
         self.destroy = function()
         {
             self.$target.remove();
+            self.frame.detach();
             window.media_uploaders[self.$el.attr( 'id' )] = undefined;
             self = undefined;
+        };
+        /**
+         * On selector click event handler.
+         * Open frame,
+         * @since 1.0.0
+         *
+         * @param {object} event
+         */
+        self.on_click = function( event )
+        {
+            event.preventDefault();
+            self.frame.open();
         };
         /**
          * Renders media into target.
@@ -310,79 +366,46 @@
          * Parse HTML captured from WordPress media library.
          * Editor callback processing function.
          *
-         * @param string html HTML sent by wordpress editor.
+         * @param {"array|mixed} models.
          */
-        self.parse_capture = function ( html )
+        self.parse_capture = function ( models )
         {
-            var media = [];
-            // Shortcode to html
-            if ( html.search( /\[[/s/S]+/g ) !== -1 ) {
-                // Replace []
-                html = html.replace( /\[/g, '<' );
-                html = html.replace( /\]/g, '>' );
+            var attachments = [];
+            // Process models
+            for ( var i in models ) {
+                var media = {
+                    _model: models[i],
+                    id: models[i].id,
+                    type: models[i].get( 'type' ),
+                    subtype: models[i].get( 'subtype' ),
+                    url: models[i].get( 'url' ),
+                };
+                if ( models[i].get( 'alt' ) )
+                    media.alt = models[i].get( 'alt' );
+                if ( self.options.size
+                    && models[i].get( 'sizes' )
+                    && models[i].get( 'sizes' )[self.options.size]
+                )
+                    self.media.url = models[i].get( 'sizes' )[self.options.size].url;
+                if ( models[i].get( 'image' ) )
+                    media.img = models[i].get( 'image' ).src;
+                attachments.push( media );
             }
-            $.each( $( html ), function ( index ) {
-                if ( $( this ).is( 'video' ) && $( this ).attr( 'mp4' ) !== undefined ) {
-                    media.push( {
-                        type: 'video',
-                        url: $(this).attr('mp4'),
-                        img: $(this).attr('img'),
-                        alt: 'MP4 video',
-                        id: $(this).attr('id')
-                    } );
-                } else if ( $( this ).find( 'img' ).length > 0 ) {
-                    media.push( {
-                        type: 'image',
-                        url: $(this).find( 'img' ).attr( 'src' ),
-                        alt: $(this).find( 'img' ).attr( 'alt' ),
-                        id: $(this).find( 'img' ).attr( 'class' ).replace( /[A-Za-z\-\s]/g, '' )
-                    } );
-                } else if ( $( this ).is( 'img' ) ) {
-                    media.push( {
-                        type: 'image',
-                        url: $( this ).attr( 'src' ),
-                        alt: $( this ).attr( 'alt' ),
-                        id: $( this ).attr( 'class' ).replace( /[A-Za-z\-\s]/g, '' )
-                    } );
-                } else if ( $( this ).attr( 'href' ) !== undefined ) {
-                    media.push( {
-                        type: 'file',
-                        url: $(this).attr('href')
-                    } );
-                } else if ( $( this ).is( 'iframe' ) ) {
-                    media.push( {
-                        type: 'embed',
-                        url: $(this).attr('src'),
-                        alt: $(this).attr('alt'),
-                        id: $(this).attr('class').replace( /[A-Za-z\-\s]/g, '' ),
-                        img: $(this).attr('img'),
-                        iframe: $( this ),
-                    } );
-                } else if ( $( this ).hasClass( 'video-frame' ) ) {
-                    media.push( {
-                        type: 'embed',
-                        url: $( this ).find( 'iframe' ).attr( 'src' ),
-                        alt: $( this ).find( 'iframe' ).attr( 'alt' ),
-                        id: $( this ).find( 'iframe' ).attr( 'class' ).replace( /[A-Za-z\-\s]/g, '' ),
-                        img: $( this ).find( 'iframe' ).attr( 'img' ),
-                        iframe: $( this ).find( 'iframe' ),
-                    } );
-                }
-            } );
+            // Shortcode to html
             if ( self.options.mediaFilter ) {
-                media = media.filter( self.options.mediaFilter );
+                attachments = attachments.filter( self.options.mediaFilter );
             }
             if ( self.options.mediaMap ) {
-                media = media.map( self.options.mediaMap );
+                attachments = attachments.map( self.options.mediaMap );
             }
-            if ( self.options.multiple && media.length > 1 ) {
-                while ( media.length > 1 ) {
-                    media.pop();
+            if ( self.options.multiple && attachments.length > 1 ) {
+                while ( attachments.length > 1 ) {
+                    attachments.pop();
                 }
             }
-            self.render( media );
+            self.render( attachments );
             if ( self.options.success ) {
-                self.options.success( media );
+                self.options.success( attachments );
             }
         };
         /**
@@ -394,8 +417,8 @@
             if ( self.templates.image === undefined ) {
                 self.templates.image = '<div class="attachment"><img><input type="text"/></div>';
             }
-            if ( self.templates.image === undefined ) {
-                self.templates.image = '<div class="attachment"><video controls><source type="video/mp4"></video><input type="text"/></div>';
+            if ( self.templates.video === undefined ) {
+                self.templates.video = '<div class="attachment"><video controls><source type="video/mp4"></video><input type="text"/></div>';
             }
             if ( self.templates.file === undefined ) {
                 self.templates.file = '<div class="attachment"><input type="text"/></div>';
@@ -405,35 +428,14 @@
             }
         };
         /**
-         * Wordpress editor callback.
+         * WordPress media selection event handler.
          * @since 1.0.0
-         * @since 1.0.2 Fixes multiple callers.
-         *
-         * @param string html   HTML returned by wordpress editor.
-         * @param string editor Editor key name.
          */
-        self.on_send_to_editor = function ( html, editor )
+        self.on_select = function()
         {
-            if ( self.options.editor === undefined
-                || ( this.activeEditor != self.options.editor
-                    && editor != self.options.editor
-                )
-            )
-                return self.prev_send_to_editor
-                    ? self.prev_send_to_editor(
-                        html,
-                        this.activeEditor  ? this.activeEditor : editor
-                    )
-                    : undefined;
-
-            self.parse_capture( html );
+            var selection = self.frame.state().get( 'selection' );
+            self.parse_capture( selection.models );
         };
-        /**
-         * Saves previous event.
-         * @since 1.0.2
-         * @var object
-         */
-        self.prev_send_to_editor = window.send_to_editor;
         /**
          * End plugin.
          * @since 1.0.0
