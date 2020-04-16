@@ -1,6 +1,6 @@
 {
   "name": "wp-media-uploader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Convert any DOM element into a WordPress media uploader input.",
   "main": "dist/jquery.wp-media-uploader.min.js",
   "repository": {
