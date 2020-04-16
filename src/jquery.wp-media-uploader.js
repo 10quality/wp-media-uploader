@@ -91,22 +91,22 @@
              * Flag that indicates if plugin should render results. 
              * @var {bool}
              */
-            render: self.$el.data( 'render' ) ? self.$el.data( 'render' ) : true,
+            render: self.$el.data( 'render' ) !== undefined ? self.$el.data( 'render' ) : true,
             /**
              * Flag that indicates if multiple results are expected. 
              * @var {bool}
              */
-            multiple: self.$el.attr( 'multiple' ) ? self.$el.attr( 'multiple' ) : false,
+            multiple: self.$el.attr( 'multiple' ) !== undefined ? self.$el.attr( 'multiple' ) : false,
             /**
              * Flag that indicates results should be cleared when a new selection is being rendered.
              * @var {bool}
              */
-            clearOnSelection: self.$el.data( 'clear-on-selection' ) ? self.$el.data( 'clear-on-selection' ) : true,
+            clearOnSelection: self.$el.data( 'clear-on-selection' ) !== undefined ? self.$el.data( 'clear-on-selection' ) : true,
             /**
              * Flag that indicates results can be cleared.
              * @var {bool}
              */
-            allowClear: self.$el.data( 'allow-clear' ) ? self.$el.data( 'allow-clear' ) : true,
+            allowClear: self.$el.data( 'allow-clear' ) !== undefined ? self.$el.data( 'allow-clear' ) : true,
             /**
              * Template DOM element or HTML string.
              * @var {string}
@@ -151,7 +151,7 @@
              * Wether or not to allow modal to close after selection.
              * @var {string}
              */
-            allowClose: self.$el.data( 'allowClose' ) ? self.$el.data( 'allowClose' ) : true,
+            allowClose: self.$el.data( 'allowClose' ) !== undefined ? self.$el.data( 'allowClose' ) : true,
             /**
              * Callback function with media results as parameter, called after render process has finished.
              * @var {function}
@@ -171,17 +171,22 @@
              * Whether or not to receive an ID value instead of a url.
              * @var {string}
              */
-            idValue: self.$el.data( 'id-value' ) ? self.$el.data( 'id-value' ) : true,
+            idValue: self.$el.data( 'id-value' ) !== undefined ? self.$el.data( 'id-value' ) : true,
             /**
              * Whether or not to display input.
              * @var {string}
              */
-            showInput: self.$el.data( 'show-input' ) ? self.$el.data( 'show-input' ) : false,
+            showInput: self.$el.data( 'show-input' ) !== undefined ? self.$el.data( 'show-input' ) : false,
             /**
-             * Whether or not to display input.
+             * Attachment input CSS class.
              * @var {string}
              */
             inputCssClass: self.$el.data( 'input-class' ) || undefined,
+            /**
+             * Target CSS class.
+             * @var {string}
+             */
+            targetCssClass: self.$el.data( 'target-class' ) || undefined,
         }, options );
         /**
          * Creates a unique ID.
@@ -245,13 +250,15 @@
                     self.$target = self.$el;
                     break;
                 default:
-                    if ( $( self.target ).length )
-                        self.$target = $( self.target );
+                    if ( $( self.options.target ).length )
+                        self.$target = $( self.options.target );
                     break;
             }
             // Stop if no target has been stablished
             if ( self.$target === undefined )
                 return;
+            if ( self.options.targetCssClass )
+                self.$target.addClass( self.options.targetCssClass );
             // Check on templates
             var $template = undefined;
             if ( self.options.templateImage ) {
@@ -277,7 +284,7 @@
             // Set default templates
             self.set_default_templates();
             // General options override
-            if ( self.options.multiple )
+            if ( !self.options.multiple )
                 self.options.clearOnSelection = true;
             // Bind events
             self.$el.on( 'click', self.on_click );
@@ -322,6 +329,10 @@
                 if ( self.options.clearOnSelection )
                     self.$target.html( '' );
                 $.each( media, function (i) {
+                    // Prevent from rendering duplicated
+                    if ( self.$target.find( '#' + this.id ).length )
+                        return;
+                    // Render
                     self.$target.append( self.render_media(this) );
                 } );
             }
@@ -337,14 +348,14 @@
          *
          * @return {string}
          */
-        self.render_media = function ( media ) {
+        self.render_media = function ( media )
+        {
             $html = $( self.templates[media.type] );
             // General settings
+            $html.attr( 'id', media.id );
             $html.find( 'input' ).attr( 'type', self.options.showInput ? 'text' : 'hidden' );
             if ( self.options.name )
                 $html.find( 'input' ).attr( 'name', name + ( self.options.multiple ? '[]' : '' ) );
-            if ( self.options.value )
-                $html.find( 'input' ).attr( 'value', value );
             if ( !self.options.idValue && media.url )
                 $html.find( 'input' ).attr( 'value', media.url );
             if ( self.options.idValue && media.id )
@@ -404,7 +415,7 @@
             if ( self.options.mediaMap ) {
                 attachments = attachments.map( self.options.mediaMap );
             }
-            if ( self.options.multiple && attachments.length > 1 ) {
+            if ( !self.options.multiple && attachments.length > 1 ) {
                 while ( attachments.length > 1 ) {
                     attachments.pop();
                 }
@@ -422,16 +433,16 @@
         self.set_default_templates = function()
         {
             if ( self.templates.image === undefined ) {
-                self.templates.image = '<div class="attachment"><img><input type="text"/></div>';
+                self.templates.image = '<div class="attachment type-image"><img><input type="text"/></div>';
             }
             if ( self.templates.video === undefined ) {
-                self.templates.video = '<div class="attachment"><video controls><source type="video/mp4"></video><input type="text"/></div>';
+                self.templates.video = '<div class="attachment type-video"><video controls><source type="video/mp4"></video><input type="text"/></div>';
             }
             if ( self.templates.file === undefined ) {
-                self.templates.file = '<div class="attachment"><input type="text"/></div>';
+                self.templates.file = '<div class="attachment type-file"><input type="text"/></div>';
             }
             if ( self.templates.embed === undefined ) {
-                self.templates.embed = '<div class="attachment"><img><input type="text"/></div>';
+                self.templates.embed = '<div class="attachment type-embed"><img><input type="text"/></div>';
             }
         };
         /**
