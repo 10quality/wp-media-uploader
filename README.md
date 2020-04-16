@@ -13,11 +13,16 @@ Content:
     * [Via Javascript](#via-javascript)
  * [Options](#options)
     * [HTML attributes](#html-attributes)
+    * [target](#option-target)
+        * [after](#after)
+        * [inside](#inside)
+        * [DOM selector](#selector)
     * [mediaFilter](#option-mediafilter)
     * [mediaMap](#option-mediamap)
     * [mediaLoad](#option-mediaload)
  * [Events](#events)
  * [Methods](#methods)
+ * [Templating](#templating)
 
 ## Install
 
@@ -143,6 +148,52 @@ The following lists the HTML attributes and their javascript option counter-part
 | `data-template-file` | `templateFile` | `string` |
 | `data-template-embed` | `templateEmbed` | `string` |
 
+
+### Option: target
+
+This option allows you to define where is the selection going to be rendered.
+
+#### after
+
+*Note:* This is the default value.
+
+Target set to `after` will make the plugin generate a unique container that will be placed right after the uploader. Selection will be rendered inside the generated `<div>`:
+```javascript
+$( '#my-uploader' ).wp_media_uploader();
+```
+```html
+<button id="my-uploader">Add Media</button>
+<!-- Generated "div" target will be placed here -->
+```
+
+#### inside
+
+Target set to `inside` will make the plugin render the selection inside its own HTML element:
+```javascript
+$( '#my-uploader' ).wp_media_uploader( {
+    target: 'inside',
+} );
+```
+```html
+<div id="my-uploader">
+    Click to add media here
+    <!-- Selection will be rendered here. the text "Click to add media here" will be cleared upon selection -->
+</div>
+```
+
+#### selector
+
+Target set to a DOM selector will allow you to determine where to render the selection:
+```javascript
+$( '#my-uploader' ).wp_media_uploader( {
+    target: '#my-container',
+} );
+```
+```html
+<button id="my-uploader">Add Media</button>
+<div id="my-container"></div>
+```
+
 ### Option: mediaFilter
 
 This option allows you to filter attachments before they are rendered, for example, the next snippet filters and returns only attachments with `url` property:
@@ -226,6 +277,27 @@ window.custom_load_media = function( uploader, values )
 }
 ```
 
+You can also stop the plugin from loading media by sending and empty string as parameter. For instance, this is useful if you plan to add load the attachment with PHP.
+```javascript
+$( '#my-uploader' ).wp_media_uploader( {
+    value: '45,65,77',
+    mediaLoad: '',
+    target: '#my-container'
+} );
+```
+```html
+<a id="my-uploader">Add Media</a>
+<div id="my-container">
+    <?php if ( $attachment ) : ?>
+        <div id="<?php echo esc_attr( $attachment->ID ) ?>" class="attachment">
+            <!-- custom template-->
+        </div>
+    <?php endif ?>
+</div>
+```
+
+**IMPORTANT**: If you will load the attachment(s) via PHP, make sure the markup is wrapped inside a div with the following attributes `id="{attachment_id}" and `class="attachment"`.
+
 ## Events
 
 List of events:
@@ -236,8 +308,8 @@ List of events:
 | `uploader:render.before` | *uploader* | Triggered before rendering. |
 | `uploader:render.after` | *uploader* | Triggered after rendering. |
 | `uploader:render` | | Triggered after rendering (no parameters). |
-| `uploader:attachments` | *array*,*uploader* | Triggered after attachments have been selected, filtered and mapped. Before rendering. |
-| `uploader:selection` | *array*,*uploader* | Triggered after rendering. The array is the raw collection of models returned by WordPress media uploader modal and not the list of attachements proccessed by the plugin. |
+| `uploader:attachments` | *array*, *uploader* | Triggered after attachments have been selected, filtered and mapped. Before rendering. |
+| `uploader:selection` | *array*, *uploader* | Triggered after rendering. The array is the raw collection of models returned by WordPress media uploader modal and not the list of attachements proccessed by the plugin. |
 
 ### Event usage
 
@@ -269,6 +341,8 @@ Usage example:
 ```javascript
 $( '#my-uploader' ).wp_media_uploader( 'destroy' );
 ```
+
+## Templating
 
 ## License
 
