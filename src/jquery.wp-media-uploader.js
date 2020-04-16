@@ -282,6 +282,8 @@
             // Bind events
             self.$el.on( 'click', self.on_click );
             self.frame.on( 'select', self.on_select );
+            // Trigger
+            self.$el.trigger( 'uploader:ready', [self.options.value, self] );
         };
         /**
          * Destroys plugin.
@@ -315,6 +317,7 @@
         self.render = function ( media )
         {
             if ( !self.options.render ) return;
+            self.$el.trigger( 'uploader:render.before', [self] );
             if ( self.$target ) {
                 if ( self.options.clearOnSelection )
                     self.$target.html( '' );
@@ -322,6 +325,9 @@
                     self.$target.append( self.render_media(this) );
                 } );
             }
+            // Trigger
+            self.$el.trigger( 'uploader:render.after', [self] );
+            self.$el.trigger( 'uploader:render' );
         }
         /**
          * Returns media as a rendered using a template.
@@ -403,6 +409,7 @@
                     attachments.pop();
                 }
             }
+            self.$el.trigger( 'uploader:attachments', [attachments, self] );
             self.render( attachments );
             if ( self.options.success ) {
                 self.options.success( attachments );
@@ -435,6 +442,7 @@
         {
             var selection = self.frame.state().get( 'selection' );
             self.parse_capture( selection.models );
+            self.$el.trigger( 'uploader:selection', [selection.models, self] );
         };
         /**
          * End plugin.
