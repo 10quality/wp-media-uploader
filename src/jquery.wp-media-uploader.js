@@ -386,7 +386,7 @@
                     && models[i].get( 'sizes' )
                     && models[i].get( 'sizes' )[self.options.size]
                 )
-                    self.media.url = models[i].get( 'sizes' )[self.options.size].url;
+                    media.url = models[i].get( 'sizes' )[self.options.size].url;
                 if ( models[i].get( 'image' ) )
                     media.img = models[i].get( 'image' ).src;
                 attachments.push( media );
