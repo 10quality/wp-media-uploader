@@ -146,7 +146,7 @@
              * Wether or not to allow modal to close after selection.
              * @var {string}
              */
-            allowClose: self.$el.data( 'allowClose' ) !== undefined ? self.$el.data( 'allowClose' ) : true,
+            allowClose: self.$el.data( 'allow-close' ) !== undefined ? self.$el.data( 'allow-close' ) : true,
             /**
              * Callback function with media results as parameter, called after render process has finished.
              * @var {function}

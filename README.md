@@ -54,6 +54,7 @@ wp_enqueue_script(
     '1.0.0',
     true
 );
+```
 
 ### Via HTML
 
@@ -109,7 +110,33 @@ The following is the list of available jQuery plugin `options`:
 | `templateEmbed` | `string` | HTML or a DOM selector. Template to use for embed-based attachments (Simple Post Gallery plugin). Default: *the plugin will use an internal template* |
 | `mediaLoad` | `string` | Expectes the name of a global (`window`) function or empty. This is the callable that will be used to load the media when the plugin is ready. Default: *the plugin will user WordPress rest api (if avialable) to load the attachment (Only supports ID values).* |
 
-The following documentation is for specific options:
+### HTML attributes
+
+The following lists the HTML attributes and their javascript option counter-part:
+
+| HTML attrbutes | Option | Value type |
+| --- | --- | --- |
+| `value` | `value` | `string` |
+| `name` | `name` | `string` |
+| `multiple` | `multiple` | `int` (values `1` or `0`) |
+| `data-editor` | `editor` | `string` |
+| `data-target` | `target` | `string` |
+| `data-render` | `render` | `int` (values `1` or `0`) |
+| `data-clear-on-selection` | `clearOnSelection` | `int` (values `1` or `0`) |
+| `data-title` | `title` | `string` |
+| `data-button` | `mimeType` | `string` |
+| `data-type` | `size` | `string` |
+| `data-size` | `size` | `string` |
+| `data-allow-close` | `allowClose` | `int` (values `1` or `0`) |
+| `data-id-value` | `idValue` | `int` (values `1` or `0`) |
+| `data-show-input` | `showInput` | `int` (values `1` or `0`) |
+| `data-input-class` | `inputCssClass` | `string` |
+| `data-target-class` | `targetCssClass` | `string` |
+| `data-media-load` | `mediaLoad` | `string` |
+| `data-template-image` | `templateImage` | `string` |
+| `data-template-video` | `templateVideo` | `string` |
+| `data-template-file` | `templateFile` | `string` |
+| `data-template-embed` | `templateEmbed` | `string` |
 
 ### Option: mediaFilter
 
@@ -135,10 +162,15 @@ $( '#my-uploader' ).wp_media_uploader( {
 } );
 ```
 
-## Option: mediaMap
+## Option: mediaLoad
 
 This option allows you to set your own custom global function that will handle the initial attachments load, by default the plugin uses `wp.api` @ `media` endpoint; the next snippet uses a custom api endpoint to retrieve the attachments:
 ```javascript
+$( '#my-uploader' ).wp_media_uploader( {
+    value: '45,65,77', // IDs separated by comma
+    mediaLoad: 'custom_load_media',
+} );
+
 /**
  * @param {object} uploader The uploader instance.
  * @param {array}  values   The collection of values.
@@ -148,12 +180,45 @@ window.custom_load_media = function( uploader, values )
     // Verify
     if ( wp === undefined || wp.api === undefined )
         return;
+    // Disable uploader (to prevent selection during loading)
+    uploader.$el.prop( 'disabled', true );
+    uploader.$el.addClass( 'loading' );
+    uploader.$el.attr( 'disabled', 'disabled' );
+    // Make request
+    wp.apiRequest( {
+        path: 'custom_namespace/v1/custom_endpoint',
+        method: 'GET',
+        data: {
+            values: values,
+        },
+    } )
+    .then( function( data ) {
+        var attachments = [];
+        // Process data
+        for ( var i in data ) {
+            // This is the minumin media properties expected to fill
+            var media = {
+                _model: undefined,
+                id: data[i].id,
+                type: data[i].type,
+                url: data[i].url,
+            };
+            if ( data[i].alt_text )
+                media.alt = data[i].alt_text;
+            if ( uploader.options.size
+                && data[i].sizes
+                && data[i].sizes[uploader.options.size]
+            )
+                media.url = data[i].sizes[uploader.options.size];
+            attachments.push( media );
+        }
+        uploader.render( attachments );
+        // Enable uploader
+        uploader.$el.prop( 'disabled', false );
+        uploader.$el.removeAttr( 'disabled' );
+        uploader.$el.removeClass( 'loading' );
+    } );
 }
-
-$( '#my-uploader' ).wp_media_uploader( {
-    value: '45,65,77', // IDs separated by comma
-    mediaLoad: 'custom_load_media',
-} );
 ```
 
 
