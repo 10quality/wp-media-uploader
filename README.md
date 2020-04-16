@@ -97,7 +97,7 @@ The following is the list of available jQuery plugin `options`:
 | Option | Type | Description |
 | --- | --- | --- |
 | `name` | `string` | Input name. Required if this will be used inside a form. |
-| `value` | `number|string` | Input value. Values separated by commas when using the `multiple` option. |
+| `value` | `string` | Input value. Values separated by commas when using the `multiple` option. |
 | `editor` | `string` | Editor ID. Default: *the plugin will assign a unique ID* |
 | `target` | `string` | Expected values `after`, `inside` or a DOM selector. This identifies where the selected will be rendered. Default: `after` |
 | `render` | `bool` | Flag that indicates if selected results should be rendered inside target or not. Default: `true` |
