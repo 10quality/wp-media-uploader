@@ -186,7 +186,7 @@
              * Target CSS class.
              * @var {string}
              */
-            targetCssClass: self.$el.data( 'target-class' ) || undefined,
+            mediaLoad: self.$el.data( 'media-load' ) !== undefined ? ( self.$el.data( 'media-load' ) ? self.$el.data( 'media-load' ) : undefined ) : 'wp.api',
         }, options );
         /**
          * Creates a unique ID.
@@ -289,6 +289,20 @@
             // Bind events
             self.$el.on( 'click', self.on_click );
             self.frame.on( 'select', self.on_select );
+            // Set initial values
+            if ( self.options.value ) {
+                self.options.value = self.options.value.split( ',' );
+                if ( self.options.mediaLoad ) {
+                    switch( self.options.mediaLoad ) {
+                        case 'wp.api':
+                            self.load_attachments( self.options.value );
+                            break;
+                        default:
+                            window[self.options.mediaLoad]( self, self.options.value );
+                            break;
+                    }
+                }
+            }
             // Trigger
             self.$el.trigger( 'uploader:ready', [self.options.value, self] );
         };
@@ -313,6 +327,8 @@
         self.on_click = function( event )
         {
             event.preventDefault();
+            if ( self.$el.is( ':disabled' ) || self.$el.hasClass( 'loading' ) )
+                return;
             self.frame.open();
         };
         /**
@@ -454,6 +470,65 @@
             var selection = self.frame.state().get( 'selection' );
             self.parse_capture( selection.models );
             self.$el.trigger( 'uploader:selection', [selection.models, self] );
+        };
+        /**
+         * Loads and attachment using WordPress Rest API.
+         * @since 1.0.0
+         *
+         * @param {array} ids
+         */
+        self.load_attachments = function( ids )
+        {
+            ids = ids.filter( function( id ) {
+                return !isNaN( id );
+            } );
+            if ( wp && wp.api && ids.length ) {
+                self.$el.prop( 'disabled', true );
+                self.$el.addClass( 'loading' );
+                self.$el.attr( 'disabled', 'disabled' );
+                wp.apiRequest( {
+                        path: 'wp/v2/media',
+                        method: 'GET',
+                        data: {
+                            include: ids,
+                            per_page: 100,
+                        },
+                    } )
+                    .then( self.on_load_attachments );
+            }
+        };
+        /**
+         * Handles WordPress Rest api response.
+         * @since 1.0.0
+         *
+         * @param {array} data
+         */
+        self.on_load_attachments = function( data )
+        {
+            var attachments = [];
+            // Process models
+            for ( var i in data ) {
+                var media = {
+                    _model: undefined,
+                    id: data[i].id,
+                    type: data[i].media_type,
+                    subtype: data[i].mime_type.replace( '/' + data[i].media_type + '\//g', '' ),
+                    url: data[i].guid.rendered ? data[i].guid.rendered : data[i].guid,
+                };
+                if ( data[i].alt_text )
+                    media.alt = data[i].alt_text;
+                if ( self.options.size
+                    && data[i].media_details
+                    && data[i].media_details.sizes
+                    && data[i].media_details.sizes[self.options.size]
+                )
+                    media.url = data[i].media_details.sizes[self.options.size].source_url;
+                attachments.push( media );
+            }
+            self.render( attachments );
+            self.$el.prop( 'disabled', false );
+            self.$el.removeAttr( 'disabled' );
+            self.$el.removeClass( 'loading' );
         };
         /**
          * End plugin.
