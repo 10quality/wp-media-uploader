@@ -2,7 +2,7 @@
  * WordPress Media Uploader.
  * jQuery plugin and script.
  * @author 10 Quality Studio <https://www.10quality.com/>
- * @version 1.0.0
+ * @version 1.0.1
  * @license MIT
  */
 ( function( $ ) {
@@ -372,7 +372,7 @@
             $html.attr( 'id', media.id );
             $html.find( 'input' ).attr( 'type', self.options.showInput ? 'text' : 'hidden' );
             if ( self.options.name )
-                $html.find( 'input' ).attr( 'name', name + ( self.options.multiple ? '[]' : '' ) );
+                $html.find( 'input' ).attr( 'name', self.options.name + ( self.options.multiple ? '[]' : '' ) );
             if ( !self.options.idValue && media.url )
                 $html.find( 'input' ).attr( 'value', media.url );
             if ( self.options.idValue && media.id )
