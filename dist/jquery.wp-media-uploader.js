@@ -2,7 +2,7 @@
  * WordPress Media Uploader.
  * jQuery plugin and script.
  * @author 10 Quality Studio <https://www.10quality.com/>
- * @version 1.0.0
+ * @version 1.0.1
  * @license MIT
  */
 ( function( $ ) {
@@ -372,7 +372,7 @@
             $html.attr( 'id', media.id );
             $html.find( 'input' ).attr( 'type', self.options.showInput ? 'text' : 'hidden' );
             if ( self.options.name )
-                $html.find( 'input' ).attr( 'name', name + ( self.options.multiple ? '[]' : '' ) );
+                $html.find( 'input' ).attr( 'name', self.options.name + ( self.options.multiple ? '[]' : '' ) );
             if ( !self.options.idValue && media.url )
                 $html.find( 'input' ).attr( 'value', media.url );
             if ( self.options.idValue && media.id )
@@ -412,6 +412,7 @@
                     id: models[i].id,
                     type: models[i].get( 'type' ),
                     subtype: models[i].get( 'subtype' ),
+                    mime: models[i].get( 'mime' ),
                     url: models[i].get( 'url' ),
                 };
                 if ( models[i].get( 'alt' ) )
@@ -423,6 +424,16 @@
                     media.url = models[i].get( 'sizes' )[self.options.size].url;
                 if ( models[i].get( 'image' ) )
                     media.img = models[i].get( 'image' ).src;
+                if ( models[i].get( 'title' ) )
+                    media.title = models[i].get( 'title' );
+                if ( models[i].get( 'filename' ) )
+                    media.filename = models[i].get( 'filename' );
+                if ( media.type !== 'image'
+                    && media.type !== 'video'
+                    && media.type !== 'embed'
+                ) {
+                    media.type = 'file';
+                }
                 attachments.push( media );
             }
             // Shortcode to html
@@ -476,11 +487,11 @@
          * Loads and attachment using WordPress Rest API.
          * @since 1.0.0
          *
-         * @param {array} ids
+         * @param {array} values
          */
-        self.load_attachments = function( ids )
+        self.load_attachments = function( values )
         {
-            ids = ids.filter( function( id ) {
+            var ids = values.filter( function( id ) {
                 return !isNaN( id );
             } ).map( function( id ) {
                 return id.trim();
@@ -498,6 +509,20 @@
                         },
                     } )
                     .then( self.on_load_attachments );
+            } else if ( values.length ) {
+                var attachments = [];
+                // Process models
+                for ( var i in values ) {
+                    attachments.push( {
+                        _model: undefined,
+                        id: 1,
+                        type: 'file',
+                        mime: undefined,
+                        subtype: undefined,
+                        url: values[i],
+                    } );
+                }
+                self.render( attachments );
             }
         };
         /**
@@ -515,7 +540,8 @@
                     _model: undefined,
                     id: data[i].id,
                     type: data[i].media_type,
-                    subtype: data[i].mime_type.replace( '/' + data[i].media_type + '\//g', '' ),
+                    mime: data[i].mime_type,
+                    subtype: data[i].mime_type.replace( /[a-zA-Z0-9]+\//g, '' ),
                     url: data[i].guid.rendered ? data[i].guid.rendered : data[i].guid,
                 };
                 if ( data[i].alt_text )
@@ -526,6 +552,15 @@
                     && data[i].media_details.sizes[self.options.size]
                 )
                     media.url = data[i].media_details.sizes[self.options.size].source_url;
+                // Fix type
+                if ( media.type !== 'image' )
+                    media.type = data[i].mime_type.replace( /\/[a-zA-Z0-9]+/g, '' );
+                if ( media.type !== 'image'
+                    && media.type !== 'video'
+                    && media.type !== 'embed'
+                ) {
+                    media.type = 'file';
+                }
                 attachments.push( media );
             }
             self.render( attachments );
