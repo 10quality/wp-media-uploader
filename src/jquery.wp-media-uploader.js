@@ -103,11 +103,6 @@
              */
             clearOnSelection: self.$el.data( 'clear-on-selection' ) !== undefined ? self.$el.data( 'clear-on-selection' ) : true,
             /**
-             * Flag that indicates results can be cleared.
-             * @var {bool}
-             */
-            allowClear: self.$el.data( 'allow-clear' ) !== undefined ? self.$el.data( 'allow-clear' ) : true,
-            /**
              * Template DOM element or HTML string.
              * @var {string}
              */
@@ -182,6 +177,11 @@
              * @var {string}
              */
             inputCssClass: self.$el.data( 'input-class' ) || undefined,
+            /**
+             * Target CSS class.
+             * @var {string}
+             */
+            targetCssClass: self.$el.data( 'target-class' ) || undefined,
             /**
              * Target CSS class.
              * @var {string}
