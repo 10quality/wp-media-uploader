@@ -13,6 +13,11 @@ Content:
     * [Via Javascript](#via-javascript)
  * [Options](#options)
     * [HTML attributes](#html-attributes)
+    * [mediaFilter](#option-mediafilter)
+    * [mediaMap](#option-mediamap)
+    * [mediaLoad](#option-mediaload)
+ * [Events](#events)
+ * [Methods](#methods)
 
 ## Install
 
@@ -149,7 +154,7 @@ $( '#my-uploader' ).wp_media_uploader( {
 } );
 ```
 
-## Option: mediaMap
+### Option: mediaMap
 
 This option allows you to map and modify  attachments before they are rendered, for example, the next snippet maps and returns a modified attachment:
 ```javascript
@@ -162,7 +167,7 @@ $( '#my-uploader' ).wp_media_uploader( {
 } );
 ```
 
-## Option: mediaLoad
+### Option: mediaLoad
 
 This option allows you to set your own custom global function that will handle the initial attachments load, by default the plugin uses `wp.api` @ `media` endpoint; the next snippet uses a custom api endpoint to retrieve the attachments:
 ```javascript
@@ -221,8 +226,49 @@ window.custom_load_media = function( uploader, values )
 }
 ```
 
+## Events
 
-### HTML attributes
+List of events:
+
+| Event | Parameters | Description |
+| --- | --- | --- |
+| `uploader:ready` | *values*, *uploader* | Triggered when the plugin has initialized and it is ready. |
+| `uploader:render.before` | *uploader* | Triggered before rendering. |
+| `uploader:render.after` | *uploader* | Triggered after rendering. |
+| `uploader:render` | | Triggered after rendering (no parameters). |
+| `uploader:attachments` | *array*,*uploader* | Triggered after attachments have been selected, filtered and mapped. Before rendering. |
+| `uploader:selection` | *array*,*uploader* | Triggered after rendering. The array is the raw collection of models returned by WordPress media uploader modal and not the list of attachements proccessed by the plugin. |
+
+### Event usage
+
+```javascript
+$( '#my-uploader' ).on( event, handler );
+```
+
+Examples:
+```javascript
+$( '#my-uploader' ).on( 'uploader:ready', function() {
+    alert( 'Ready!' );
+} );
+
+$( '#my-uploader' ).on( 'uploader:attachments', function( event, attachments, uploader ) {
+    console.log( attachments );
+    uploader.$el.hide();
+} );
+```
+
+## Methods
+
+List of methods:
+
+| Method | Parameters | Description |
+| --- | --- | --- |
+| `destroy` | | Destroys plugin instance. |
+
+Usage example:
+```javascript
+$( '#my-uploader' ).wp_media_uploader( 'destroy' );
+```
 
 ## License
 
