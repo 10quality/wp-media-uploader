@@ -487,11 +487,11 @@
          * Loads and attachment using WordPress Rest API.
          * @since 1.0.0
          *
-         * @param {array} ids
+         * @param {array} values
          */
-        self.load_attachments = function( ids )
+        self.load_attachments = function( values )
         {
-            ids = ids.filter( function( id ) {
+            var ids = values.filter( function( id ) {
                 return !isNaN( id );
             } ).map( function( id ) {
                 return id.trim();
@@ -509,6 +509,20 @@
                         },
                     } )
                     .then( self.on_load_attachments );
+            } else if ( values.length ) {
+                var attachments = [];
+                // Process models
+                for ( var i in values ) {
+                    attachments.push( {
+                        _model: undefined,
+                        id: 1,
+                        type: 'file',
+                        mime: undefined,
+                        subtype: undefined,
+                        url: values[i],
+                    } );
+                }
+                self.render( attachments );
             }
         };
         /**
