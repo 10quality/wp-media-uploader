@@ -26,10 +26,12 @@ Content:
 
 ## Install
 
-Npm command:
+Via *npm*:
 ```
-npm install ...
+npm install wp-media-uploader
 ```
+
+Or download release and add it into your project.
 
 ## Basic usage
 
