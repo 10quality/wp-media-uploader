@@ -305,6 +305,7 @@ List of events:
 | Event | Parameters | Description |
 | --- | --- | --- |
 | `uploader:ready` | *values*, *uploader* | Triggered when the plugin has initialized and it is ready. |
+| `uploader:open` | *uploader* | Triggered after WordPress media modal is called and opened. |
 | `uploader:render.before` | *uploader* | Triggered before rendering. |
 | `uploader:render.after` | *uploader* | Triggered after rendering. |
 | `uploader:render` | | Triggered after rendering (no parameters). |
@@ -343,6 +344,73 @@ $( '#my-uploader' ).wp_media_uploader( 'destroy' );
 ```
 
 ## Templating
+
+The best way to explain templating is with a case scenario.
+
+The following snippets will customize the plugin to use `jquery-ui-sortable` to enabled sorting inside the target, to allow sorting ofrendered results using drag-and-drop. The image template will be replaced to add an extra remove button, so selected media can be removed from selection.
+
+### (1) Enqueue sortable and add WP.API dependency
+
+The following sample, will enqueue the plugin, plus `wordpress media`, `jquery-ui-sortable` and `wp-api`.
+```php
+wp_enqueue_media();
+wp_enqueue_script(
+    'wp-media-uploader',
+    PATH_TO_FILE . '/jquery.wp-media-uploader.min.js',
+    [ 'jquery', 'jquery-ui-core', 'jquery-ui-sortable', 'wp-api' ],
+    '1.0.0',
+    true
+);
+```
+
+### (2) Uploader initialized via HTML
+
+The following sample will initialize the uploader input via HTML. The PHP value passed as attribute is validated first, to see if is an array or not, and if so, the value is passed as a comma separated list. `sortable` css class will be added to the generated target. The template inside `#gallery-image` will be used to render all selected images. `data-clear-on-selection` will allow for new selection to be appended to the target.
+```html
+<div id="gallery" class="gallery-container">
+    <button role="media-uploader"
+        id="gallery"
+        type="button"
+        class="button"
+        name="gallery"
+        value="<?php echo esc_attr( is_array( $gallery ) ? implode( ',', $gallery ) : $gallery ) ?>"
+        multiple="multiple"
+        data-type="image"
+        data-editor="gallery"
+        data-clear-on-selection="0"
+        data-target-css="sortable"
+        data-template-image="#gallery-image"
+    ><?php echo __( 'Add Media' ) ?></button>
+</div>
+<script id="gallery-image" type="text/template">
+    <div class="attachment">
+        <img><input type="text"/>
+        <span class="remove">&times;</span>
+    </div>
+</script>
+```
+
+### (3) Init sortable on ready event
+
+The following sample will initialize `sortable` once the plugin is ready and has generated the target `<div>`.
+```javascript
+$( '#my-uploader' ).on( 'uploader:ready', function( event, uploader ) {
+    if ( uploader.$target.hasClass( 'sortable' ) )
+        uploader.$target.sortable();
+} );
+```
+
+### (4) Add remove behavior
+
+The following sample will allow to remove attachments.
+```javascript
+$( document ).on( 'click', '.attachment .remove', function( event ) {
+    event.preventDefault();
+    if ( confirm( 'Do you really want to remove this item?' ) ) {
+        $( this ).closest( '.attachment' ).remove();
+    }
+} );
+```
 
 ## License
 

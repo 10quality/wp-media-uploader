@@ -329,6 +329,7 @@
             event.preventDefault();
             if ( self.$el.is( ':disabled' ) || self.$el.hasClass( 'loading' ) )
                 return;
+            self.$el.trigger( 'uploader:open', [self] );
             self.frame.open();
         };
         /**
