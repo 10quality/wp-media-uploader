@@ -526,7 +526,8 @@
                     _model: undefined,
                     id: data[i].id,
                     type: data[i].media_type,
-                    subtype: data[i].mime_type.replace( '/' + data[i].media_type + '\//g', '' ),
+                    mime: data[i].mime_type,
+                    subtype: data[i].mime_type.replace( /[a-zA-Z0-9]+\//g, '' ),
                     url: data[i].guid.rendered ? data[i].guid.rendered : data[i].guid,
                 };
                 if ( data[i].alt_text )
@@ -537,6 +538,9 @@
                     && data[i].media_details.sizes[self.options.size]
                 )
                     media.url = data[i].media_details.sizes[self.options.size].source_url;
+                // Fix type
+                if ( media.type !== 'image' )
+                    media.type = data[i].mime_type.replace( /\/[a-zA-Z0-9]+/g, '' );
                 attachments.push( media );
             }
             self.render( attachments );
