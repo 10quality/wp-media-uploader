@@ -2,7 +2,7 @@
  * WordPress Media Uploader.
  * jQuery plugin and script.
  * @author 10 Quality Studio <https://www.10quality.com/>
- * @version 1.0.1
+ * @version 1.0.2
  * @license MIT
  */
 ( function( $ ) {
@@ -34,6 +34,13 @@
             window.media_uploaders[id][options]();
         }
         /**
+         * Check if a reference for this component already exists.
+         * @since 1.0.2
+         */
+        var id = $( this ).attr( 'id' );
+        if ( window.media_uploaders !== undefined && id && window.media_uploaders[id] !== undefined )
+            return window.media_uploaders[id];
+        /**
          * Self reference.
          * @since 1.0.0
          */
@@ -60,6 +67,7 @@
             video: undefined,
             file: undefined,
             embed: undefined,
+            inside: undefined,
         };
         /**
          * Plugin options.
@@ -234,7 +242,7 @@
                 },
                 multiple: self.options.multiple,
             } );
-            // Assign targer
+            // Assign target
             switch ( self.options.target ) {
                 case 'before':
                     var target_id = 'uploader-target-' + self.uniqid();
@@ -254,6 +262,7 @@
                         self.$target = $( self.options.target );
                     break;
             }
+            self.templates.inside = self.$target.html();
             // Stop if no target has been stablished
             if ( self.$target === undefined )
                 return;
@@ -567,6 +576,16 @@
             self.$el.prop( 'disabled', false );
             self.$el.removeAttr( 'disabled' );
             self.$el.removeClass( 'loading' );
+        };
+        /**
+         * Clears selection,
+         * @since 1.0.2
+         */
+        self.clear = function()
+        {
+            self.$target.html( '' );
+            self.$target.html( self.templates.inside );
+            self.$el.trigger( 'uploader:clear' );
         };
         /**
          * End plugin.

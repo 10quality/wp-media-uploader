@@ -312,6 +312,7 @@ List of events:
 | `uploader:render` | | Triggered after rendering (no parameters). |
 | `uploader:attachments` | *array*, *uploader* | Triggered after attachments have been selected, filtered and mapped. Before rendering. |
 | `uploader:selection` | *array*, *uploader* | Triggered after rendering. The array is the raw collection of models returned by WordPress media uploader modal and not the list of attachements proccessed by the plugin. |
+| `uploader:clear` | | Triggered after selection has been cleared. Also triggers `uploader:attachments` and `uploader:selection`. |
 
 ### Event usage
 
@@ -338,6 +339,7 @@ List of methods:
 | Method | Parameters | Description |
 | --- | --- | --- |
 | `destroy` | | Destroys plugin instance. |
+| `clear` | | Clears current selection. |
 
 Usage example:
 ```javascript
