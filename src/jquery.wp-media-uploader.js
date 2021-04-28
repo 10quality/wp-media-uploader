@@ -503,7 +503,7 @@
             var ids = values.filter( function( id ) {
                 return !isNaN( id );
             } ).map( function( id ) {
-                return id.trim();
+                return id.trim ? id.trim() : id;
             } );
             if ( wp && wp.api && ids.length ) {
                 self.$el.prop( 'disabled', true );
