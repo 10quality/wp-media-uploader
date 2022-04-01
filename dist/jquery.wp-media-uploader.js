@@ -2,7 +2,7 @@
  * WordPress Media Uploader.
  * jQuery plugin and script.
  * @author 10 Quality Studio <https://www.10quality.com/>
- * @version 1.0.2
+ * @version 1.0.3
  * @license MIT
  */
 ( function( $ ) {
@@ -226,6 +226,10 @@
          */
         self.ready = function()
         {
+            // Before we do anything, check if we need to set lodash noConflict mode.
+            if ( self.is_lodash() ) {
+                _.noConflict();
+            }
             // Init global references if needed
             if ( window.media_uploaders === undefined )
                 window.media_uploaders = {};
@@ -503,7 +507,7 @@
             var ids = values.filter( function( id ) {
                 return !isNaN( id );
             } ).map( function( id ) {
-                return id.trim();
+                return id.trim ? id.trim() : id;
             } );
             if ( wp && wp.api && ids.length ) {
                 self.$el.prop( 'disabled', true );
@@ -586,6 +590,32 @@
             self.$target.html( '' );
             self.$target.html( self.templates.inside );
             self.$el.trigger( 'uploader:clear' );
+        };
+        /**
+         * Returns flag if lodash is enabled, this to prevent
+         * error "Type Error: this.activateMode is not a function"
+         * from ocurring.
+         * @since 1.0.3
+         * 
+         * @link https://stackoverflow.com/questions/63672622/typeerror-this-activatemode-is-not-a-function-gutenberg-wordpress
+         * 
+         * @return {bool}
+         */
+        self.is_lodash = function()
+        {
+            let isLodash = false;
+            // If _ is defined and the function _.forEach exists then we know underscore OR lodash are in place
+            if ( 'undefined' != typeof( _ ) && 'function' == typeof( _.forEach ) ) {
+                // A small sample of some of the functions that exist in lodash but not underscore
+                const funcs = [ 'get', 'set', 'at', 'cloneDeep' ];
+                // Simplest if assume exists to start
+                isLodash = true;
+                funcs.forEach( function ( func ) {
+                    // If just one of the functions do not exist, then not lodash
+                    isLodash = ( 'function' != typeof( _[ func ] ) ) ? false : isLodash;
+                } );
+            }
+            return isLodash;
         };
         /**
          * End plugin.
