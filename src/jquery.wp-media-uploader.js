@@ -2,7 +2,7 @@
  * WordPress Media Uploader.
  * jQuery plugin and script.
  * @author 10 Quality Studio <https://www.10quality.com/>
- * @version 1.0.3
+ * @version 1.0.4
  * @license MIT
  */
 ( function( $ ) {
@@ -285,12 +285,12 @@
                     self.templates.video = $template.html();
             }
             if ( self.options.templateFile ) {
-                $template = $( self.options.templateVideo );
+                $template = $( self.options.templateFile );
                 if ( $template.length )
                     self.templates.file = $template.html();
             }
             if ( self.options.templateEmbed ) {
-                $template = $( self.options.templateVideo );
+                $template = $( self.options.templateEmbed );
                 if ( $template.length )
                     self.templates.embed = $template.html();
             }
@@ -407,13 +407,20 @@
                     $html.find( 'source' ).attr( 'src', media.url );
                     break;
             }
+            // Replace by class selectors, only applies to URL and filename
+            if ( $html.find( '.inject-media-url' ).length )
+                $html.find( '.inject-media-url' ).html( media.url );
+            if ( $html.find( '.inject-media-id' ).length )
+                $html.find( '.inject-media-id' ).html( media.id );
+            if ( $html.find( '.inject-media-filename' ).length )
+                $html.find( '.inject-media-filename' ).html( media.filename );
             return $html.get();
         }
         /**
          * Parse HTML captured from WordPress media library.
          * Editor callback processing function.
          *
-         * @param {"array|mixed} models.
+         * @param {array|mixed} models.
          */
         self.parse_capture = function ( models )
         {
@@ -447,6 +454,8 @@
                 ) {
                     media.type = 'file';
                 }
+                if ( media.filename === null )
+                    media.filename = self.get_filename( media.url );
                 attachments.push( media );
             }
             // Shortcode to html
@@ -533,6 +542,7 @@
                         mime: undefined,
                         subtype: undefined,
                         url: values[i],
+                        filename: self.get_filename( values[i] ),
                     } );
                 }
                 self.render( attachments );
@@ -574,12 +584,25 @@
                 ) {
                     media.type = 'file';
                 }
+                media.filename = self.get_filename( media.url );
                 attachments.push( media );
             }
             self.render( attachments );
             self.$el.prop( 'disabled', false );
             self.$el.removeAttr( 'disabled' );
             self.$el.removeClass( 'loading' );
+        };
+        /**
+         * Returns the filename of a URL.
+         * @since 1.0.4
+         * 
+         * @param {string} url
+         * 
+         * @return {string}
+         */
+        self.get_filename = function( url )
+        {
+            return url.substring( url.lastIndexOf( '/' ) + 1 );
         };
         /**
          * Clears selection,

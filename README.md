@@ -297,7 +297,7 @@ $( '#my-uploader' ).wp_media_uploader( {
 </div>
 ```
 
-**IMPORTANT**: If you will load the attachment(s) via PHP, make sure the markup is wrapped inside a div with the following attributes `id="{attachment_id}" and `class="attachment"`.
+**IMPORTANT**: If you will load the attachment(s) via PHP, make sure the markup is wrapped inside a div with the following attributes `id="{attachment_id}"` and `class="attachment"`.
 
 ## Events
 
@@ -348,11 +348,13 @@ $( '#my-uploader' ).wp_media_uploader( 'destroy' );
 
 ## Templating
 
+### Templating using external selector
+
 The best way to explain templating is with a case scenario.
 
 The following snippets will customize the plugin to use `jquery-ui-sortable` to enabled sorting inside the target, to allow sorting ofrendered results using drag-and-drop. The image template will be replaced to add an extra remove button, so selected media can be removed from selection.
 
-### (1) Enqueue sortable and add WP.API dependency
+#### (1) Enqueue sortable and add WP.API dependency
 
 The following sample, will enqueue the plugin, plus `wordpress media`, `jquery-ui-sortable` and `wp-api`.
 ```php
@@ -366,7 +368,7 @@ wp_enqueue_script(
 );
 ```
 
-### (2) Uploader initialized via HTML
+#### (2) Uploader initialized via HTML
 
 The following sample will initialize the uploader input via HTML. The PHP value passed as attribute is validated first, to see if is an array or not, and if so, the value is passed as a comma separated list. `sortable` css class will be added to the generated target. The template inside `#gallery-image` will be used to render all selected images. `data-clear-on-selection` will allow for new selection to be appended to the target.
 ```html
@@ -393,7 +395,7 @@ The following sample will initialize the uploader input via HTML. The PHP value 
 </script>
 ```
 
-### (3) Init sortable on ready event
+#### (3) Init sortable on ready event
 
 The following sample will initialize `sortable` once the plugin is ready and has generated the target `<div>`.
 ```javascript
@@ -403,7 +405,7 @@ $( '#my-uploader' ).on( 'uploader:ready', function( event, uploader ) {
 } );
 ```
 
-### (4) Add remove behavior
+#### (4) Add remove behavior
 
 The following sample will allow to remove attachments.
 ```javascript
@@ -415,6 +417,43 @@ $( document ).on( 'click', '.attachment .remove', function( event ) {
 } );
 ```
 
+### Templating using attributes
+
+Another way of templating is by using the `data-template-image`, `data-template-video`, `data-template-file`, and `data-template-embed` attributes.
+
+The plugin will look for the following selectors inside the template to append data:
+
+| Selector | Behavior |
+| --- | --- |
+| `input` | The plugin will add the media's value in the `value` attribute of the `input` element. The plugin will add the `name` attribute with the respective name. |
+| `.inject-media-id` | The plugin will put the media's ID inside the element with this selector. |
+| `.inject-media-url` | The plugin will put the media's URL inside the element with this selector. |
+| `.inject-media-filename` | The plugin will put the media's filename inside the element with this selector. |
+| `img` | **ONLY FOR IMAGE AND EMBED** The plugin will add the media's URL in the `src` attribute of the element. If the media has an `alt` text, the plugin will add the media's alt text in the `alt` attribute of the element. |
+| `source` | **ONLY FOR VIDEO** The plugin will add the media's URL in the `src` attribute of the element. |
+
+Any template passed through as an attribute must be wrapped in an extra `<div>` wrapper element. For example:
+```html
+<div><div class="attachment type-file"><span class="inject-media-filename"></span><input type="hidden"/></div><div>
+```
+
+Above, the template is wrapped in a `<div>` which holds another `<div>` with the CSS classes `attachment type-file`, this second `<div>` is the one that will be used for rendering. Additionally, the media's filename will be injected inside the `<span>` with the class `inject-media-filename` and will add the media's value as an attribute on the `input` element.
+
+There rendered output will look like this:
+```html
+<div class="attachment type-file" id="123"><span class="inject-media-filename">filename.jpg</span><input type="hidden" value="123"/></div>
+```
+
+Finally, this is how uploader initialization will look like:
+```html
+<div role="media-uploader"
+    name="test"
+    multiple="multiple"
+    data-editor="test"
+    data-template-file='<div><div class="attachment type-file"><span class="inject-media-filename"></span><input type="hidden"/></div><div>'
+><?php echo __( 'Add Media' ) ?></div>
+```
+
 ## License
 
-MIT - (c) 2020 [10 Quality Studio](https://www.10quality.com/).
+MIT - (c) 2022 [10 Quality Studio](https://www.10quality.com/).
